@@ -1,0 +1,196 @@
+{
+  "name": "Microsaas using lovable +n8n",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=call gmail tool or general replay based on the user query {{ $json.body.query }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant, You are an AI agent with access to the Gmail tool.  \nYour task: Send a warm, friendly, and personalized birthday wish email to the recipient.  \n\nSteps:\n1. Identify the recipient’s name and email address from the provided input.\n2. Create a short, heartfelt, and cheerful birthday message.\n3. Use a friendly tone with light positivity.\n4. Call the Gmail tool with:\n   - To: recipient's email\n   - Subject: \"Happy Birthday 🎉 [Dhilip]!\"\n   - Body: Your generated birthday message.\n\nConstraints:\n- Keep the message under 80 words.\n- Do not include any promotional or business content.\n- End with your name or \"Best Wishes\".\n\nExample:\nTo: marees2996@gmail.com\nSubject: Happy Birthday 🎉 !dhilip\nBody: Wishing you a fantastic birthday filled with love, laughter, and joy. May your year ahead be amazing! 🎂\n\"A Little Inspiration for Your Day 🌟\",\n\nNow, generate the message and call the Gmail tool.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -320,
+        -96
+      ],
+      "id": "54567807-b9c2-4740-9536-59b820f7d811",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        80
+      ],
+      "id": "164b780f-3e7f-47b7-a607-f3eaa9fe8b18",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "D1GrunxxPUO3Ar9t",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=global_memory"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -288,
+        80
+      ],
+      "id": "b4c58812-2019-4868-b814-592b4b58be09",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "first agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        -96
+      ],
+      "id": "db31c3d1-11aa-4ba4-97df-a0c24a3c2d79",
+      "name": "Webhook",
+      "webhookId": "f0198da3-4777-4e7d-9b8b-d374c3f2522e"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        80
+      ],
+      "id": "92b845fb-7a36-49ff-ad18-6bb484981267",
+      "name": "Send a message in Gmail",
+      "webhookId": "cc764d1d-bf8b-4ddf-8b16-f1cbf71cc164",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XmLUdcZ2DtRovZrv",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        16,
+        -96
+      ],
+      "id": "d6f34b25-c05c-42ae-b727-966f7c01a5e5",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "body": {
+            "query": "Send a Birthday wishes to marees2996@gmail.com"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "39db2594-472e-45dd-9ce2-61b3826d8609",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e20ea4ebb4b4d5677921a47f101670e0e6261f3983631a172e44bb907c01b513"
+  },
+  "id": "cBUJT0BJHuG68q9D",
+  "tags": []
+}
