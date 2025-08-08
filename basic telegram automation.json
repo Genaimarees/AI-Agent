@@ -1,0 +1,143 @@
+{
+  "name": "basic telegram automation",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        -64
+      ],
+      "id": "dd9b2bd3-9e52-4f5c-920a-eb8c46a56d31",
+      "name": "Telegram Trigger",
+      "webhookId": "d666ba9b-5a25-4993-a626-294968223366",
+      "credentials": {
+        "telegramApi": {
+          "id": "eNSYzt3c09KCugjD",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=reply the yser requested query : {{ $json.message.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "you are a skilled personal assistant"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -32,
+        -64
+      ],
+      "id": "f7f63941-40e2-4786-8d3a-5c6a23d12bb0",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -112,
+        144
+      ],
+      "id": "65643a22-8f21-4d7c-960f-78dd670023ea",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "D1GrunxxPUO3Ar9t",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        -64
+      ],
+      "id": "d247d48c-f0ef-4512-8076-52bd24e3fa25",
+      "name": "Telegram ",
+      "webhookId": "30f88ec4-2aa7-4797-b290-f8e6d5d71844",
+      "credentials": {
+        "telegramApi": {
+          "id": "eNSYzt3c09KCugjD",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Telegram ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1bef25d8-f326-493d-8067-76a4bfe4dfea",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e20ea4ebb4b4d5677921a47f101670e0e6261f3983631a172e44bb907c01b513"
+  },
+  "id": "MRpbJQ0E55buHILe",
+  "tags": []
+}

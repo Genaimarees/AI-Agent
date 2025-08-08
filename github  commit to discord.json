@@ -1,0 +1,102 @@
+{
+  "name": "github  commit to discord",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "github-commits",
+        "options": {}
+      },
+      "id": "7d113d8d-99f1-4ee8-90f0-50e4cc649673",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        -192
+      ],
+      "webhookId": "22d1c6e0-38d6-4029-8ca2-aed7de931640"
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "content",
+              "value": "={{ (() => {\n  const commits = $json.body.commits;\n  if (!commits || commits.length === 0) return \"No commits found\";\n  const author = commits[0].author.name;\n  const message = commits[0].message;\n  return `🟢 Commit by ${author}: \"${message}\"`;\n})() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "87afac3e-6aed-4106-b737-a38fad9ab9a8",
+      "name": "Set",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://discord.com/api/webhooks/1401561138486841446/1DNLdBMRzNTvlpxoU_8wKeYBSXr73AR10keRahA8PrTDn3DLnrZorHP4958uGTeepqmx",
+        "options": {
+          "bodyContentType": "json"
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "=content",
+              "value": "=\ncommit changes!\n\n"
+            }
+          ]
+        }
+      },
+      "id": "41a1e592-e47b-47e2-846d-425a452d4e25",
+      "name": "Send to Discord",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        -176
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "Send to Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "12ffa824-8733-42d8-b418-6d66f595a2a6",
+  "meta": {
+    "instanceId": "e20ea4ebb4b4d5677921a47f101670e0e6261f3983631a172e44bb907c01b513"
+  },
+  "id": "ApKJJBBmLKePkCXd",
+  "tags": []
+}
