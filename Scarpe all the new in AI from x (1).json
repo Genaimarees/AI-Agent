@@ -1,0 +1,210 @@
+{
+  "name": "Scarpe all the new in AI from x",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-trends-email",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        32
+      ],
+      "id": "9154d7be-79b5-416f-b865-df73e2c3a5f9",
+      "webhookId": "fcb70026-048e-44c4-a88c-84b0c5ac1fbd"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your task: \n1. Use the HTTP Request tool to retrieve the latest and trending AI-related 5 recent English tweets from X (Twitter) using the available HTTP Request tool.\n2. Use the OpenAI Chat Model tool to transform the tweets into a blog post.\n3.Combine all generated blog posts into one formatted email body with clear headings per trend.\n4. Output the final email content as HTML (suitable for sending in an email).\nImportant:\n\nDo not include internal reasoning in your output.\n\nOutput only the final HTML email content, no extra JSON or metadata.",
+        "options": {
+          "systemMessage": "You are a helpful assistant.You are an autonomous AI automation agent working inside n8n.\n\nYour mission:\n- Once per run, retrieve trending AI-related 10 recent English tweets from X (Twitter) using the available HTTP Request tool.\n- Summarize the tweets into a blog post that includes:\n  1. Short headline (max 12 words)\n  2. Two-sentence summary\n  3. 500–700 word main article body (clear, factual, slightly conversational)\n  4. Three concise takeaways (bullet points)\n  5. Three relevant hashtags (no # symbol in output)\n  6. \"Sources\" section listing tweet permalinks\n\n- Always base all content only on the tweet text and permalinks provided — do not invent quotes or information.\n- If no AI topics are found, end the workflow gracefully with the message \"No AI trends found today.\"\n- Keep responses clean for direct publishing. Avoid placeholder text or apologies."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -192,
+        16
+      ],
+      "id": "74c733db-6aba-4a49-8a42-1a194552deea",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook Trigger').item.json.headers[\"x-forwarded-server\"] }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        224
+      ],
+      "id": "3909b080-4a31-46f8-b270-00f545f04e2c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -256,
+        240
+      ],
+      "id": "5a2aa6dd-6550-4cbc-b274-c0a6c572b81e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "D1GrunxxPUO3Ar9t",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Makes an HTTP request and returns the response data",
+        "url": "=https://api.x.com/2/tweets/search/recent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "max_results",
+              "value": "10"
+            },
+            {
+              "name": "tweet.fields",
+              "value": "id,text,created_at,lang"
+            },
+            {
+              "name": "query",
+              "value": "AI lang:en"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        64,
+        256
+      ],
+      "id": "6f4b369d-1afd-4008-bb82-a0e7108d178e",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "I0q40WmcZblI6K99",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook Trigger').item.json.body.email }}",
+        "subject": "Trending AI Newletter",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        176,
+        32
+      ],
+      "id": "3d2085bb-7d0b-4518-96e7-fcef7238513f",
+      "name": "Send a message",
+      "webhookId": "069478b7-db91-4010-acf9-6b0f3b141a33",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XmLUdcZ2DtRovZrv",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6058c480-398a-46df-b1c1-c2a7a8b1acfe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e20ea4ebb4b4d5677921a47f101670e0e6261f3983631a172e44bb907c01b513"
+  },
+  "id": "YZrVv96ijZ7W0k0J",
+  "tags": []
+}
